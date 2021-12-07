@@ -1,14 +1,15 @@
 package com.buyukli.ivan.productserviceweb2.controllers;
 
+import com.buyukli.ivan.productserviceweb2.dto.ProductDto;
 import com.buyukli.ivan.productserviceweb2.entities.Product;
 import com.buyukli.ivan.productserviceweb2.exceptions.CustomRuntimeNotFoundException;
 import com.buyukli.ivan.productserviceweb2.services.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
+@RequestMapping("/api/v1/products")
 public class ProductController {
     private ProductService productService;
 
@@ -16,41 +17,46 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @GetMapping("/products")
-    public List<Product> getAllProducts(){
-        return productService.findAll();
+    @GetMapping
+    public Page<ProductDto> getAllProducts(
+            @RequestParam(name = "p", defaultValue = "1") Integer page,
+            @RequestParam(name = "min_cost", required = false) String minCost,
+            @RequestParam(name = "max_cost", required = false) String maxCost,
+            @RequestParam(name = "title_part", required = false) String titlePart
+    ) {
+        if (page < 1) {
+            page = 1;
+        }
+        return productService.find(minCost, maxCost, titlePart, page).map(
+                ProductDto::new
+        );
     }
 
-    @GetMapping("/products/{id}")
+    @GetMapping("/{id}")
     public Product getProductById(@PathVariable Long id){
         return productService.findById(id).orElseThrow(() -> new CustomRuntimeNotFoundException("Product not found " + id));
     }
 
-    @GetMapping("products/delete/{id}")
+    @PostMapping
+    public Product createProduct(@RequestBody Product product){
+        product.setId(null);
+        return productService.save(product);
+    }
+
+    @PutMapping
+    public Product updateProduct(@RequestBody Product product){
+        return productService.save(product);
+    }
+
+    @DeleteMapping("/{id}")
     public void deleteProductById(@PathVariable Long id){
         productService.deleteById(id);
     }
 
-    @PostMapping("/products")
-    public Product createProduct(@RequestBody Product product){
-        return productService.save(product);
-    }
-
-    @GetMapping("/products/price_between")
-    public List<Product> findProductsByPriceBetween(@RequestParam(defaultValue = "0") String min, @RequestParam(defaultValue = "5") String max) {
-        return productService.findProductsByPriceBetween(min, max);
-    }
-
-    @GetMapping("/products/sortBy/{field}")
-    public List<Product> getAllProducts(@PathVariable String field){
-
-        return productService.findProductsWithSorting(field);
-    }
-
-    @GetMapping("/products/pagination/{offset}/{size}")
-    public Page<Product> getAllProducts(@PathVariable Integer offset, @PathVariable Integer size){
-
-        return productService.findProductsWithPagination(offset, size);
-    }
+//    @GetMapping("/products/sortBy/{field}")
+//    public List<Product> getAllProducts(@PathVariable String field){
+//
+//        return productService.findProductsWithSorting(field);
+//    }
 
 }
