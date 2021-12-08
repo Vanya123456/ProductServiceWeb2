@@ -7,6 +7,8 @@ import com.buyukli.ivan.productserviceweb2.services.ProductService;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -33,18 +35,20 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id){
-        return productService.findById(id).orElseThrow(() -> new CustomRuntimeNotFoundException("Product not found " + id));
+    public ProductDto getProductById(@PathVariable Long id){
+        return productService.findById(id).map(ProductDto::new).orElseThrow(() -> new CustomRuntimeNotFoundException("Product not found " + id));
     }
 
     @PostMapping
-    public Product createProduct(@RequestBody Product product){
-        product.setId(null);
+    public Product createProduct(@RequestBody ProductDto productDto){
+        Product product = new Product(productDto.getId(), productDto.getTitle(), productDto.getCost());
+        productDto.setId(null);
         return productService.save(product);
     }
 
     @PutMapping
-    public Product updateProduct(@RequestBody Product product){
+    public Product updateProduct(@RequestBody ProductDto productDto){
+        Product product = new Product(productDto.getId(), productDto.getTitle(), productDto.getCost());
         return productService.save(product);
     }
 

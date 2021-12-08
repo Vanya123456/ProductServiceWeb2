@@ -50,11 +50,7 @@ public class ProductService {
         productRepository.deleteById(id);
     }
 
-    public List<Product> findProductsWithSorting(String field){
-        return productRepository.findAll(Sort.by(Sort.Direction.ASC, field));
-    }
-
-    public Page<Product> findProductsWithPagination(int offset, int pageSize){
-        return productRepository.findAll(PageRequest.of(offset, pageSize));
-    }
+//    public List<Product> findProductsWithSorting(String field){
+//        return productRepository.findAll(Sort.by(Sort.Direction.ASC, field));
+//    }
 }
